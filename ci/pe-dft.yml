@@ -1,0 +1,28 @@
+stages:
+  - build
+
+build stack:
+  tags: [hohgant-container]
+  stage: build
+  variables:
+    CSCS_RUN_BARE_METAL: 'YES'
+    SLURM_JOB_NUM_NODES: 1
+    SLURM_TIMELIMIT: '03:00:00'
+    PULL_IMAGE: 'NO'
+    SLURM_PARTITION: cpu
+    GIT_SUBMODULE_STRATEGY: recursive
+
+  script:
+    - BUILD_PATH=/dev/shm/jenkssl/spack-stack-pe-dft
+    - RECIPE_PATH=$PWD/pe-dft
+    - PYTHON_VENV=/dev/shm/jenkssl/venv
+    - python3 -m venv $PYTHON_VENV
+    - source $PYTHON_VENV/bin/activate
+    - pip install -r stackinator/requirements.txt
+    - env --chdir=stackinator ./bin/stack-config -b$BUILD_PATH -r$RECIPE_PATH -d
+    - env --chdir="$BUILD_PATH" --ignore-environment PATH=/usr/bin:/bin:$BUILD_PATH/spack/bin make modules store.squashfs -j64
+
+  # cleanup, runs always, independent of `script` exit status
+  after_script:
+    - rm -Rf /dev/shm/jenkssl
+
