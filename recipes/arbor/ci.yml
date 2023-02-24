@@ -1,0 +1,7 @@
+include: '/ci/common.yml'
+
+build-mc:
+  extends: .stack-build-hohgant-cpu
+  variables:
+    STACK_NAME: arbor-mc
+    STACK_RECIPE: recipes/arbor/multicore
